@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Primary Meta Tags -->
+  <meta name="title" content="Reproduction of Closed-Form Concept Erasure via Double Projections | Rafi Ahmed">
+  <meta name="description" content="Technical reading and reproduction of the Double Projections (DP) concept erasure method: cassette player object erasure on Stable Diffusion 1.4. Target accuracy falls from 76% to 2% while other classes drop only 2.8% on average.">
+  <meta name="keywords" content="concept erasure, double projections, diffusion models, stable diffusion, machine unlearning, generative models, computer vision">
+  <meta name="author" content="Rafi Ahmed">
+  <meta name="robots" content="index, follow">
+  <meta name="language" content="English">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Machine Intelligence Lab, Sichuan University">
+  <meta property="og:title" content="Reproduction of Closed-Form Concept Erasure via Double Projections">
+  <meta property="og:description" content="Technical reading and reproduction of the Double Projections (DP) concept erasure method: cassette player object erasure on Stable Diffusion 1.4.">
+  <meta property="og:url" content="https://codewith-rafi.github.io/dp-concept-erasure/">
+  <meta property="og:image" content="https://codewith-rafi.github.io/dp-concept-erasure/static/images/qualitative_grid.png">
+  <meta property="og:image:alt" content="Concept erasure reproduction - qualitative grid">
+  <meta property="article:published_time" content="2026-09-01T00:00:00.000Z">
+  <meta property="article:author" content="Rafi Ahmed">
+  <meta property="article:section" content="Research">
+  <meta property="article:tag" content="concept erasure">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Reproduction of Closed-Form Concept Erasure via Double Projections">
+  <meta name="twitter:description" content="Technical reading and reproduction of the Double Projections (DP) concept erasure method: cassette player object erasure on Stable Diffusion 1.4.">
+  <meta name="twitter:image" content="https://codewith-rafi.github.io/dp-concept-erasure/static/images/qualitative_grid.png">
+  <meta name="twitter:image:alt" content="Concept erasure reproduction - qualitative grid">
+
+  <!-- Academic/Research Specific -->
+  <meta name="citation_title" content="Reproduction of Closed-Form Concept Erasure via Double Projections: Object Erasure - Cassette Player on Stable Diffusion 1.4">
+  <meta name="citation_author" content="Ahmed, Rafi">
+  <meta name="citation_publication_date" content="2026">
+  <meta name="citation_conference_title" content="Reproduction Study - Machine Intelligence Lab, Sichuan University">
+  <meta name="citation_pdf_url" content="https://codewith-rafi.github.io/dp-concept-erasure/static/pdfs/DP_Report_CassettePlayer.pdf">
+
+  <!-- Additional SEO -->
+  <meta name="theme-color" content="#2563eb">
+  <meta name="msapplication-TileColor" content="#2563eb">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+  <!-- Preconnect for performance -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+
+  <title>Reproduction of Closed-Form Concept Erasure via Double Projections | Rafi Ahmed</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="static/images/favicon.svg">
+
+  <!-- Critical CSS - Load synchronously -->
+  <link rel="stylesheet" href="static/css/bulma.min.css">
+  <link rel="stylesheet" href="static/css/index.css">
+
+  <!-- Fonts - Optimized loading -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- MathJax for mathematical notation -->
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      }
+    };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+
+  <!-- Defer non-critical JavaScript -->
+  <script defer src="static/js/fontawesome.all.min.js"></script>
+  <script defer src="static/js/index.js"></script>
+
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "ScholarlyArticle",
+    "headline": "Reproduction of Closed-Form Concept Erasure via Double Projections: Object Erasure - Cassette Player on Stable Diffusion 1.4",
+    "description": "Technical reading and reproduction of the Double Projections (DP) concept erasure method: cassette player object erasure on Stable Diffusion 1.4. Target accuracy falls from 76% to 2% while other classes drop only 2.8% on average.",
+    "author": [
+      {
+        "@type": "Person",
+        "name": "Rafi Ahmed",
+        "affiliation": {
+          "@type": "Organization",
+          "name": "Machine Intelligence Lab, Sichuan University"
+        }
+      }
+    ],
+    "datePublished": "2026-09-01",
+    "publisher": {
+      "@type": "Organization",
+      "name": "Machine Intelligence Lab, Sichuan University"
+    },
+    "url": "https://codewith-rafi.github.io/dp-concept-erasure/",
+    "image": "https://codewith-rafi.github.io/dp-concept-erasure/static/images/qualitative_grid.png",
+    "keywords": ["concept erasure", "double projections", "diffusion models", "stable diffusion", "computer vision"],
+    "abstract": "Technical reading of the Double Projections (DP) concept erasure method together with a reproduction of the Stable Diffusion 1.4 object-erasure run for cassette player. ResNet-50 semantic accuracy on the target fell from 76.0% to 2.0%, and the average drop on the other nine ImageNette classes was 2.8%.",
+    "isAccessibleForFree": true,
+    "license": "https://creativecommons.org/licenses/by/4.0/",
+    "mainEntity": {
+      "@type": "WebPage",
+      "@id": "https://codewith-rafi.github.io/dp-concept-erasure/"
+    },
+    "about": [
+      {
+        "@type": "Thing",
+        "name": "Concept Erasure"
+      },
+      {
+        "@type": "Thing",
+        "name": "Generative Models"
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+
+  <!-- Scroll to Top Button -->
+  <button class="scroll-to-top" onclick="scrollToTop()" title="Scroll to top" aria-label="Scroll to top">
+    <i class="fas fa-chevron-up"></i>
+  </button>
+
+  <main id="main-content">
+
+    <!-- Header -->
+    <section class="hero">
+      <div class="hero-body">
+        <div class="container is-max-desktop">
+          <div class="columns is-centered">
+            <div class="column has-text-centered">
+              <h1 class="title is-2 publication-title">Reproduction of<br>Closed-Form Concept Erasure via Double Projections</h1>
+              <div class="is-size-4 has-text-grey">Object Erasure: Cassette Player on Stable Diffusion 1.4</div>
+              <div class="is-size-5 publication-authors">
+                <span class="author-block">
+                  <a href="https://github.com/codewith-rafi" target="_blank"><i class="fab fa-github"></i> Rafi Ahmed</a>
+                </span>
+                <span class="author-block">
+                  <a href="mailto:2023521460125@stu.scu.edu.cn"><i class="fas fa-envelope"></i> 2023521460125@stu.scu.edu.cn</a>
+                </span>
+                <span class="author-block">
+                  <a href="mailto:codewithrafi@outlook.com"><i class="fas fa-envelope"></i> codewithrafi@outlook.com</a>
+                </span>
+              </div>
+
+              <div class="is-size-5 publication-authors">
+                <span class="author-block">Machine Intelligence Lab, Sichuan University<br>September 2026</span>
+              </div>
+
+              <div class="column has-text-centered">
+                <div class="publication-links">
+                  <span class="link-block">
+                    <a href="static/pdfs/DP_Report_CassettePlayer.pdf" target="_blank"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="fas fa-file-pdf"></i>
+                    </span>
+                    <span>Report</span>
+                  </a>
+                </span>
+
+                <span class="link-block">
+                  <a href="https://arxiv.org/abs/2604.10032" target="_blank"
+                  class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                    <i class="fas fa-file-alt"></i>
+                  </span>
+                  <span>Paper</span>
+                </a>
+              </span>
+
+                <span class="link-block">
+                  <a href="https://github.com/codewith-rafi/dp-concept-erasure" target="_blank"
+                  class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                    <i class="fab fa-github"></i>
+                  </span>
+                  <span>Code</span>
+                </a>
+              </span>
+
+              <span class="link-block">
+                <a href="https://github.com/codewith-rafi" target="_blank"
+                class="external-link button is-normal is-rounded is-dark">
+                <span class="icon">
+                  <i class="fas fa-user-circle"></i>
+                </span>
+                <span>GitHub</span>
+              </a>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- Teaser image -->
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+      <img src="static/images/qualitative_grid.png" alt="Qualitative grid of generated images before and after DP concept erasure" loading="lazy">
+      <h2 class="subtitle has-text-centered">
+        Generated images before and after applying the Double Projections (DP) erasure. The target concept
+        (cassette player) is effectively suppressed, while the remaining classes are largely preserved.
+      </h2>
+    </div>
+  </div>
+</section>
+<!-- End teaser image -->
+
+<!-- Overview -->
+<section class="section hero is-light">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3">Overview</h2>
+    <div class="content has-text-justified">
+      <p>
+        This report presents a technical reading of Zhang et al. [1] on Double Projections (DP) for
+        concept erasure, together with a reproduction of the Stable Diffusion 1.4 object-erasure run
+        for <em>cassette player</em> (guide: <em>box</em>) on a lab RTX 5090. In the reproduction,
+        ResNet-50 semantic accuracy on the target fell from <strong>76.0% to 2.0%</strong> (authors'
+        reference: 78% &rarr; 2%), and the average drop on the other nine ImageNette classes was
+        <strong>2.8%</strong> (reference: 3.3%). Section 1 develops the method with its mathematical
+        detail (UCE baseline, DP projections, truncation theory); Section 2 situates DP among
+        closed-form editing methods; Sections 3&ndash;4 report the reproduction; Section 5 discusses
+        open problems and directions.
+      </p>
+    </div>
+  </div>
+</section>
+<!-- End overview -->
+
+<!-- Section 1: Method -->
+<section class="section hero">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3">1&nbsp;&nbsp;Method (technical)</h2>
+
+    <div class="content has-text-justified">
+      <h3 class="title is-4">1.1&nbsp;&nbsp;Problem and UCE baseline</h3>
+      <p>
+        Concept erasure edits a pretrained map $W_0 \in \mathbb{R}^{p \times n}$ (in practice, the
+        UNet cross-attention <em>to_v</em> maps) so a target concept embedding $c_i$ is redirected
+        toward a proxy $c_i^{*}$, while non-target embeddings in
+        $C_{\mathrm{pres}} = [c_1, \dots, c_m]$ should stay close to their original images under $W_0$.
+      </p>
+      <p>
+        Unified Concept Editing (UCE) [2] casts this as a single least-squares objective over an edit
+        set $E$ and a preserve set $P$:
+      </p>
+      $$\min_{W} \sum_{c_i \in E} \bigl\lVert W c_i - v_i^{*} \bigr\rVert_2^2 \;+\; \sum_{c_j \in P} \bigl\lVert W c_j - W_0 c_j \bigr\rVert_2^2, \qquad v_i^{*} := W_0 c_i^{*}, \tag{1}$$
+      <p>
+        i.e., each target is pushed toward the image of its proxy under the original map, while
+        preserve concepts are kept close to their original outputs. Setting the gradient to zero
+        yields the closed form
+      </p>
+      $$W = \Bigl( \sum_{c_i \in E} v_i^{*} c_i^{\top} + \sum_{c_j \in P} W_0 c_j c_j^{\top} \Bigr) \Bigl( \sum_{c_i \in E} c_i c_i^{\top} + \sum_{c_j \in P} c_j c_j^{\top} \Bigr)^{-1}, \tag{2}$$
+      <p>
+        a deterministic, training-free update computed purely from concept embeddings (paper
+        Eqs. (5)&ndash;(6)).
+      </p>
+
+      <p>
+        <strong>Why the least-squares fit still leaks (paper Theorem 3.1).</strong> A closed form
+        does not by itself control collateral damage. For a single target $c$ edited to $v^{*}$, with
+        $N := cc^{\top} + C_{\mathrm{pres}} C_{\mathrm{pres}}^{\top}$, the UCE update is the rank-one
+        step
+      </p>
+      $$\Delta W = \bigl( v^{*} - W_0 c \bigr) \frac{c^{\top} N^{-1}}{c^{\top} N^{-1} c}, \tag{3}$$
+      <p>
+        which modifies the weights exactly along the residual direction $v^{*} - W_0 c$. The
+        perturbation of a preserve vector $p$ is therefore parallel to that of the target itself,
+        scaled by the $N^{-1/2}$-weighted inner product ratio
+        $|c^{\top} N^{-1} p| / |c^{\top} N^{-1} c|$. Under the paper&rsquo;s assumption that, for some
+        $\lambda &gt; 0$,
+        $\langle N^{-1/2} c, N^{-1/2} p \rangle \ge \lambda \langle N^{-1/2} c, N^{-1/2} c \rangle$,
+        one obtains
+      </p>
+      $$\bigl\lVert \Delta W p \bigr\rVert_2 \;\ge\; \lambda \bigl\lVert \Delta W c \bigr\rVert_2. \tag{4}$$
+      <p>
+        In words: if a preserve vector is sufficiently aligned with the target in the
+        $N^{-1/2}$-weighted geometry, the edit perturbs it at least as much as it perturbs the
+        target. Optimality of a least-squares fit therefore says nothing about which directions
+        absorb the change; DP&rsquo;s design instead makes preservation a hard constraint rather than
+        a soft penalty.
+      </p>
+
+      <h3 class="title is-4">1.2&nbsp;&nbsp;DP formulation</h3>
+      <p>
+        DP writes $W = W_0 + \Delta W$ and separates erasure from preservation with two closed-form
+        projections.
+      </p>
+      <p>
+        <strong>Projection 1 (proxy in a safe subspace).</strong> Let $S \in \mathbb{R}^{n \times k}$
+        be a basis for a safe subspace (columns are guide / safe concept directions). The proxy is
+        the orthogonal projection of the target embedding onto that subspace:
+      </p>
+      $$c_i^{*} = S \bigl( S^{\top} S \bigr)^{+} S^{\top} c_i, \tag{5}$$
+      <p>
+        where $(\cdot)^{+}$ is the Moore&ndash;Penrose pseudoinverse. For the Cassette Player object
+        setup in the official code / reference log, the guide is <em>box</em>. When $k = 1$, this
+        step reduces to the usual single-guide UCE-style proxy.
+      </p>
+      <p>
+        <strong>Projection 2 (nullspace constraint; essential).</strong> Require that the weight
+        update does not move preserve embeddings:
+      </p>
+      $$\Delta W \, C_{\mathrm{pres}} = 0. \tag{6}$$
+      <p>
+        With that constraint, erasure is a linearly constrained least-squares problem
+      </p>
+      $$\min_{\Delta W} \bigl\lVert (W_0 + \Delta W) c_i - W_0 c_i^{*} \bigr\rVert_2^2 \quad \text{s.t.} \quad \Delta W \, C_{\mathrm{pres}} = 0. \tag{7}$$
+      <p>
+        Let $U_2 \in \mathbb{R}^{n \times (n-r)}$ be an orthonormal basis for the left nullspace of
+        $C_{\mathrm{pres}}$ ($r = \operatorname{rank} C_{\mathrm{pres}}$, so
+        $U_2^{\top} C_{\mathrm{pres}} = 0$). Feasible updates are exactly
+        $\Delta W = Z U_2^{\top}$ for some $Z \in \mathbb{R}^{p \times (n-r)}$. Substituting into
+        (7) removes the constraint and reduces the problem to
+      </p>
+      $$\min_{Z} \bigl\lVert Z x - b \bigr\rVert_2^2, \qquad x := U_2^{\top} c_i \in \mathbb{R}^{n-r}, \qquad b := W_0 \bigl( c_i^{*} - c_i \bigr), \tag{8}$$
+      <p>
+        whose minimum-norm solution (for $x \neq 0$) is $Z = b x^{\top} / \lVert x \rVert_2^2$,
+        giving the closed form
+      </p>
+      $$\Delta W = W_0 \bigl( c_i^{*} - c_i \bigr) \frac{\bigl( U_2^{\top} c_i \bigr)^{\top}}{\bigl\lVert U_2^{\top} c_i \bigr\rVert_2^2} \; U_2^{\top} \tag{9}$$
+      <p>
+        (paper Eqs. (11)&ndash;(12)). The paper notes that multiple-target erasure
+        $C_{\mathrm{tgt}} = [c_1, \dots, c_T]$ is solved identically with a matrix
+        $X = U_2^{\top} C_{\mathrm{tgt}}$.
+      </p>
+      <p>
+        <strong>Guarantee on $C_{\mathrm{pres}}$.</strong> If $\Delta W C_{\mathrm{pres}} = 0$ and
+        $W^{\star} = W_0 + \Delta W$, then
+      </p>
+      $$W^{\star} v = W_0 v \quad \text{for all } v \in \operatorname{col}(C_{\mathrm{pres}}). \tag{10}$$
+      <p>
+        That is exact preservation of the linear map on the preserve embedding subspace (paper
+        Theorem 4.1). It does not by itself guarantee identical ResNet accuracies on sampled
+        images, because generation and classification are nonlinear and noisy.
+      </p>
+      <p>
+        Both projections are analytical: once embeddings are collected, the edit is deterministic
+        and training-free. Projection 1 is optional (one can hand-pick $c_i^{*}$ as in UCE);
+        Projection 2 is the geometric constraint that makes preservation explicit.
+      </p>
+
+      <h3 class="title is-4">1.3&nbsp;&nbsp;Truncated preserve sets: preservation and erasure bounds</h3>
+      <p>
+        For large preserve sets, one keeps only the top-$k$ left singular directions of
+        $C_{\mathrm{pres}}$. Write the thin SVD $C_{\mathrm{pres}} = U_1 \Sigma V^{\top}$ with
+        $U_1 = [u_1, \dots, u_r]$ ordered by $\sigma_1 \ge \cdots \ge \sigma_r &gt; 0$, let
+        $U_{1,k} = [u_1, \dots, u_k]$, and let $U_{2,k} \in \mathbb{R}^{n \times (n-k)}$ be an
+        orthonormal basis of $\operatorname{span}(U_{1,k})^{\perp}$. Parameterizing
+        $\Delta W = Z U_{2,k}^{\top}$ enforces $\Delta W U_{1,k} = 0$: the top-$k$ preserve
+        directions are still preserved exactly, and (9) applies with $U_2 \to U_{2,k}$.
+      </p>
+      <p>
+        <strong>Theorem 4.2 (preservation bound).</strong> For any preserve column $p_i$ of
+        $C_{\mathrm{pres}}$,
+      </p>
+      $$\bigl\lVert W^{\star} p_i - W_0 p_i \bigr\rVert_2 \;\le\; \sigma_{k+1}\bigl( C_{\mathrm{pres}} \bigr) \; \bigl\lVert Z^{\star} \bigr\rVert_2, \tag{11}$$
+      <p>
+        where $\sigma_{k+1}$ is the $(k+1)$-st singular value of $C_{\mathrm{pres}}$: the
+        perturbation of a preserved column is controlled by the tail of the spectrum cut off by
+        truncation, scaled by the size of the update. At $k = r$ the right-hand side vanishes and
+        Theorem 4.1 is recovered.
+      </p>
+      <p>
+        <strong>Theorem 4.3 (erasure lower bound).</strong> The paper complements this with a
+        matching lower bound on the target side: every target whose embedding has non-negligible
+        projection onto the edited row space $\operatorname{row}(U_{2,k}^{\top} C_{\mathrm{tgt}})$
+        is guaranteed to be modified, and in the single-target case with
+        $c \notin \operatorname{col}(U_{1,k})$ the pseudoinverse solution achieves the exact fit
+        $W c = W_0 c^{\star}$.
+      </p>
+
+      <h3 class="title is-4">1.4&nbsp;&nbsp;Embedding-level preservation vs. generation-level accuracy</h3>
+      <p>
+        Theorems 4.1&ndash;4.3 are stated on content embeddings. In the SD pipeline the UNet
+        cross-attention actually consumes fused tokens
+      </p>
+      $$z_j = c_j + q_j, \tag{12}$$
+      <p>
+        where $q_j$ is a positional embedding, and the CLIP text encoder self-attention mixes
+        tokens before they reach the UNet. Consequently $\Delta W z_j = \Delta W q_j \neq 0$ even
+        when $\Delta W c_j = 0$: the edit still moves preserve-token keys/values through their
+        positional component, and the cross-attention softmax turns that into sample-level
+        deviations. Perfect linear preservation is therefore compatible with nonzero
+        generation-level accuracy drops&mdash;consistent with the gas pump drop observed in this
+        reproduction (74% &rarr; 58%, Table 3) and with the paper&rsquo;s Appendix C.
+      </p>
+
+      <h3 class="title is-4">1.5&nbsp;&nbsp;How object erasure is measured</h3>
+      <p>
+        On ImageNette-style object erasure with SD 1.4, images are generated from the original and
+        erased models, then scored with a pretrained ResNet-50 (Top-1). <em>Semantic Acc</em>
+        treats near-duplicate labels (e.g. cassette / tape player / radio) as a match;
+        <em>strict Acc</em> requires the exact label. Lower target Acc after the edit means
+        stronger erasure; lower average drop on the other classes means better preservation under
+        this proxy metric.
+      </p>
+    </div>
+  </div>
+</section>
+<!-- End section 1 -->
+
+<!-- Section 2: Related work -->
+<section class="section hero is-light">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3">2&nbsp;&nbsp;Related work</h2>
+    <div class="content has-text-justified">
+      <p>
+        DP belongs to a line of post-hoc, training-free edits of generative model weights.
+        TIME [3] introduced a closed-form projection edit for the cross-attention key/value
+        matrices, regularized by a global Frobenius term toward the original weights. UCE [2]
+        generalized this to a least-squares objective that edits a set of concepts while softly
+        preserving a designated concept set, and MEMIT [6] showed how the same family of
+        closed-form updates can be constrained so that previously stored associations remain
+        exactly satisfied. On the fine-tuning side, ESD [5] erases concepts by training the
+        denoiser toward a negatively guided teacher, and concept ablation [4] fine-tunes the model
+        to match an anchor concept on target prompts. DP combines the closed-form efficiency of
+        these methods with an explicit nullspace preservation constraint and, unlike the
+        fine-tuning approaches, comes with analytical preservation guarantees (Theorems
+        4.1&ndash;4.3).
+      </p>
+    </div>
+  </div>
+</section>
+<!-- End section 2 -->
+
+<!-- Section 3: Reproduction setup -->
+<section class="section hero">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3">3&nbsp;&nbsp;Reproduction setup</h2>
+    <div class="content has-text-justified">
+      <div class="table-container">
+        <table class="table is-bordered is-striped is-fullwidth">
+          <caption class="has-text-left is-size-7 has-text-grey has-text-weight-semibold">Table 1: Hardware and software for the Cassette Player run.</caption>
+          <thead>
+            <tr><th>Item</th><th>Value</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Host</td><td>gpu-user0</td></tr>
+            <tr><td>Conda env</td><td>DP (PyTorch 2.10.0+cu128)</td></tr>
+            <tr><td>GPU</td><td>Logical GPU 1, RTX 5090 (CUDA_VISIBLE_DEVICES=1)</td></tr>
+            <tr><td>Base model</td><td>Local lean fp16 SD 1.4 (variant="fp16")</td></tr>
+            <tr><td>Target / guide</td><td>cassette player / box</td></tr>
+            <tr><td>Preserve set $C_{\mathrm{pres}}$</td><td>9 other ImageNette classes</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><strong>Pipeline (official DP code):</strong></p>
+      <ol>
+        <li>Generate original SD 1.4 images (1000 samples, &sim;24m39s).</li>
+        <li>Run the closed-form DP edit (seconds).</li>
+        <li>Generate erased images (1000 samples, &sim;25m18s).</li>
+        <li>Score both sets with ResNet-50 semantic Top-1.</li>
+      </ol>
+
+      <p>
+        <strong>Deviations.</strong> The server could not reach Hugging Face, so a local lean fp16
+        checkpoint was used with <code>variant="fp16"</code> at loading time. Without that flag,
+        loading failed (missing full-precision VAE weights). Safety-checker weights were not
+        included in the lean package, so the checker was disabled for this research run. The
+        linear solve still runs in float32 while the loaded weights are fp16, matching the provided
+        code path.
+      </p>
+    </div>
+  </div>
+</section>
+<!-- End section 3 -->
+
+<!-- Section 4: Results -->
+<section class="section hero is-light">
+  <div class="container is-widescreen">
+    <h2 class="title is-3">4&nbsp;&nbsp;Results</h2>
+    <div class="content has-text-justified">
+      <p>
+        Table 2 compares the reproduced ResNet-50 numbers to the authors&rsquo; Cassette Player DP
+        reference log. Erased semantic Acc matches at 2.0%. Other-class average drop is 2.8% vs.
+        3.3% in the reference. Original Acc differs slightly (76% vs. 78%); likely contributors
+        include the lean fp16 checkpoint, environment / diffusers version, and sampling variation
+        (these were not ablated separately).
+      </p>
+
+      <div class="table-container">
+        <table class="table is-bordered is-striped is-fullwidth">
+          <caption class="has-text-left is-size-7 has-text-grey has-text-weight-semibold">Table 2: ResNet-50 accuracy: this reproduction vs. the authors&rsquo; Cassette Player DP reference.</caption>
+          <thead>
+            <tr><th>Metric</th><th>Ours</th><th>Reference</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Target Orig Acc (semantic)</td><td>76.0%</td><td>78.0%</td></tr>
+            <tr><td>Target Erased Acc (semantic)</td><td>2.0%</td><td>2.0%</td></tr>
+            <tr><td>Target Drop (semantic)</td><td>74.0%</td><td>76.0%</td></tr>
+            <tr><td>Target Orig Acc (strict)</td><td>4.0%</td><td>6.0%</td></tr>
+            <tr><td>Target Erased Acc (strict)</td><td>1.0%</td><td>1.0%</td></tr>
+            <tr><td>Other Orig Acc (avg)</td><td>86.3%</td><td>86.8%</td></tr>
+            <tr><td>Other Erased Acc (avg)</td><td>83.6%</td><td>83.4%</td></tr>
+            <tr><td>Other Average Drop</td><td>2.8%</td><td>3.3%</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        Per-class semantic Acc from the same eval (Table 3 excerpt): the target collapses, but
+        preservation is uneven&mdash;e.g. gas pump drops from 74% to 58% (16pp) even though it is
+        inside $C_{\mathrm{pres}}$. Average other-class drop therefore hides class-level variation.
+      </p>
+
+      <div class="table-container">
+        <table class="table is-bordered is-striped is-fullwidth">
+          <caption class="has-text-left is-size-7 has-text-grey has-text-weight-semibold">Table 3: Selected per-class semantic Acc (%) from this reproduction (100 images/class).</caption>
+          <thead>
+            <tr><th>Class</th><th>Original</th><th>Erased</th><th>Drop (pp)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>cassette player</td><td>76</td><td>2</td><td>74</td></tr>
+            <tr><td>gas pump</td><td>74</td><td>58</td><td>16</td></tr>
+            <tr><td>english springer</td><td>94</td><td>86</td><td>8</td></tr>
+            <tr><td>church</td><td>86</td><td>83</td><td>3</td></tr>
+            <tr><td>tench</td><td>73</td><td>83</td><td>&minus;10</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        Figure 1 shows Acc and Acc-drop across all ten classes. Figure 2 restricts to cassette
+        player prompts: ResNet Top-1 labels move away from cassette/tape/radio toward other
+        categories after the edit (guide = box in this setup).
+      </p>
+
+      <div class="columns is-centered">
+        <div class="column is-full">
+          <figure class="image">
+            <img src="static/images/acc_by_class.png" alt="Semantic Top-1 accuracy before vs. after DP" loading="lazy"/>
+          </figure>
+        </div>
+      </div>
+      <p class="has-text-centered is-size-7 has-text-grey">
+        <strong>Figure 1 (top):</strong> semantic Top-1 Acc (%) before vs. after DP.
+      </p>
+
+      <div class="columns is-centered">
+        <div class="column is-full">
+          <figure class="image">
+            <img src="static/images/acc_drop_by_class.png" alt="Accuracy drop per class after DP" loading="lazy"/>
+          </figure>
+        </div>
+      </div>
+      <p class="has-text-centered is-size-7 has-text-grey">
+        <strong>Figure 1 (bottom):</strong> Acc drop (pp); red = target, green = preserve classes.
+      </p>
+
+      <figure class="image">
+        <img src="static/images/target_pred_hist_before_after.png" alt="ResNet Top-1 labels on cassette player prompts before vs. after erasure" loading="lazy"/>
+      </figure>
+      <p class="has-text-centered is-size-7 has-text-grey">
+        <strong>Figure 2:</strong> ResNet Top-1 labels on cassette player prompts only, before vs.
+        after erasure.
+      </p>
+    </div>
+  </div>
+</section>
+<!-- End section 4 -->
+
+<!-- Section 5: Research gaps -->
+<section class="section hero">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3">5&nbsp;&nbsp;Research gaps</h2>
+    <div class="content has-text-justified">
+      <p>
+        Each gap below is stated together with a conjecture and a falsifiable test. Truncation,
+        FLUX, and positional ablations were not re-run in this work; the proposed tests all run on
+        the existing pipeline.
+      </p>
+
+      <h3 class="title is-4">5.1&nbsp;&nbsp;From the paper</h3>
+      <ol>
+        <li>
+          <strong>Truncated $C_{\mathrm{pres}}$: how to pick $k$</strong> (Sec. 4.4,
+          Thms. 4.2&ndash;4.3). Theorem 4.2 bounds preserve-side damage by
+          $\sigma_{k+1} \lVert Z^{\star} \rVert_2$, so the tradeoff is readable from the spectrum
+          of $C_{\mathrm{pres}}$. <em>Conjecture:</em> choosing $k$ at a spectral gap of
+          $C_{\mathrm{pres}}$ (a knee in $\sigma_1 \ge \cdots \ge \sigma_r$) should minimize
+          worst-case preserve damage at fixed erasure strength. <em>Test:</em> sweep $k$ on
+          cassette player and check whether the knee in the $\sigma$-curve predicts the best
+          operating point (max per-class drop vs. target Acc).
+        </li>
+        <li>
+          <strong>Positional coupling</strong> (Appendix C). Eq. (12) shows the guarantee holds on
+          $c_j$, while the model consumes $z_j = c_j + q_j$. <em>Conjecture:</em> augmenting
+          $C_{\mathrm{pres}}$ with position-augmented embeddings $z_j$ (or editing the
+          text-encoder embedding layer, as the paper does on FLUX) should shrink gas-pump-style
+          drops. <em>Test:</em> re-run cassette player with $C_{\mathrm{pres}}$ built from $z_j$
+          and compare per-class drops.
+        </li>
+        <li>
+          <strong>Generalization beyond $C_{\mathrm{pres}}$</strong> (Appendix J). The guarantee
+          covers only in-matrix concepts. <em>Conjecture:</em> for a held-out concept
+          $p \notin C_{\mathrm{pres}}$, the Theorem 3.1 mechanism reapplies&mdash;its drop should
+          scale with its alignment to the target in the $N^{-1/2}$-weighted geometry.
+          <em>Test:</em> measure Acc drop on a held-out class not listed in $C_{\mathrm{pres}}$ and
+          correlate with $\langle N^{-1/2} c, N^{-1/2} p \rangle$.
+        </li>
+      </ol>
+    </div>
+  </div>
+</section>
+<!-- End section 5 -->
+
+<!-- References -->
+<section class="section hero is-light">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3">References</h2>
+    <div class="content has-text-justified">
+      <ol class="references">
+        <li id="ref1">
+          Zhang, Cheng, Wang, and Liu. <a href="https://github.com/czhang024/CVPR_DouleProjection" target="_blank">Closed-Form Concept Erasure via Double Projections</a>. CVPR 2026.
+        </li>
+        <li id="ref2">
+          R. Gandikota, H. Orgad, Y. Belinkov, J. Materzy&nacute;ska, and D. Bau.
+          <a href="https://arxiv.org/abs/2308.02508" target="_blank">Unified Concept Editing in Diffusion Models (UCE)</a>. WACV 2024.
+        </li>
+        <li id="ref3">
+          H. Orgad, B. Kawar, and Y. Belinkov.
+          <a href="https://arxiv.org/abs/2303.08084" target="_blank">Editing Implicit Assumptions in Text-to-Image Diffusion Models (TIME)</a>. ICCV 2023.
+        </li>
+        <li id="ref4">
+          N. Kumari, B. Zhang, S.-Y. Wang, E. Shechtman, R. Zhang, and J.-Y. Zhu.
+          <a href="https://arxiv.org/abs/2303.13516" target="_blank">Ablating Concepts in Text-to-Image Diffusion Models</a>. ICCV 2023.
+        </li>
+        <li id="ref5">
+          R. Gandikota, J. Materzy&nacute;ska, J. Fiotto-Kaufman, and D. Bau.
+          <a href="https://arxiv.org/abs/2303.07345" target="_blank">Erasing Concepts from Diffusion Models (ESD)</a>. ICCV 2023.
+        </li>
+        <li id="ref6">
+          K. Meng, A. Sen Sharma, A. Andonian, Y. Belinkov, and D. Bau.
+          <a href="https://arxiv.org/abs/2203.07206" target="_blank">Mass-Editing Memory in a Transformer (MEMIT)</a>. ICLR 2023.
+        </li>
+      </ol>
+      <p class="is-size-7 has-text-grey">
+        Reproduction details: SD 1.4, cassette player (guide box), lab GPU (gpu-user0, RTX 5090,
+        logical GPU 1), official DP code building on Unified Concept Editing.
+      </p>
+    </div>
+  </div>
+</section>
+<!-- End references -->
+
+<footer class="footer">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content has-text-centered">
+          <p>&copy; 2026 Rafi Ahmed &middot; Machine Intelligence Lab, Sichuan University</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+  </main>
+</body>
+</html>
