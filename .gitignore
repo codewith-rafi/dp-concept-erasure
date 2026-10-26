@@ -1,0 +1,25 @@
+# ── Model weights (large, never committed) ───────────────────────────────────
+models/sd14-lean/
+models/stable-diffusion-v1-4/
+*.safetensors
+*.ckpt
+*.pt
+*.pth
+*.bin
+
+# ── Folders intentionally left out of this snapshot ───────────────────────────
+26-CVPR-Closed-Form Concept Erasure via Double Projections/
+Academic-project-page-template/
+
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# ── OS / editor ───────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
