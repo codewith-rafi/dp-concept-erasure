@@ -1,0 +1,16 @@
+================================================================================
+SUMMARY STATISTICS
+================================================================================
+
+Target Concept (cassette player):
+  • Original Accuracy (semantic): 76.0%
+  • Erased Accuracy (semantic):   2.0%
+  • Accuracy Drop:                74.0%
+  • Original Accuracy (strict):   4.0%
+  • Erased Accuracy (strict):     1.0%
+
+Other Classes (Average):
+  • Original Accuracy: 86.3%
+  • Erased Accuracy:   83.6%
+  • Average Drop:      2.8%
+================================================================================
